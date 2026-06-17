@@ -36,3 +36,26 @@ ADD https://impactingtomorrow.com/wp-content/uploads/2024/03/favicon.png \
 RUN chmod 644 /app/client/dist/assets/logo.svg \
               /app/client/dist/assets/favicon-16x16.png \
               /app/client/dist/assets/favicon-32x32.png
+
+# ---------------------------------------------------------------------------
+# OPTIONAL: brand the login button (and accent colors) WITHOUT a full rebuild.
+# LibreChat's colors are CSS variables, so this injects a small stylesheet that
+# overrides them at runtime.
+#
+# >>> Set ONE value: replace #6B2C91 with Impacting Tomorrow's purple hex. <<<
+# The hover/active variants derive automatically from it via color-mix(), so
+# you don't pick the darker shades yourself. (color-mix is supported in all
+# current browsers.) Get the exact hex from WordPress: Elementor > Site
+# Settings > Global Colors, or use your browser's color picker on the logo.
+#
+# The default login/submit button is green, so the green tokens point at your
+# purple; the button[type=submit] rule is a fallback. The `if` guard means a
+# wrong path just skips this step instead of failing the build.
+# ---------------------------------------------------------------------------
+RUN if [ -f /app/client/dist/index.html ]; then \
+      sed -i 's|</head>|<style>:root{--it-purple:#6B2C91;--green-500:var(--it-purple)!important;--green-600:color-mix(in srgb,var(--it-purple) 85%,black)!important;--green-700:color-mix(in srgb,var(--it-purple) 72%,black)!important}button[type=submit]{background-color:var(--it-purple)!important;border-color:var(--it-purple)!important}</style></head>|' /app/client/dist/index.html; \
+    fi
+
+# If your base image normally runs as a non-root user and you want to keep that
+# at runtime, uncomment the next line. If the app fails to start, remove it.
+# USER node
