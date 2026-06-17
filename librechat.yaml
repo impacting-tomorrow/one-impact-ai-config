@@ -109,15 +109,10 @@ mcpServers:
     oauth:
       authorization_url: "https://catalyst.impactingtomorrow.com/oauth/authorize"   # from Catalyst
       token_url: "https://catalyst.impactingtomorrow.com/oauth/token"               # from Catalyst
-      # client_id: ${CATALYST_OAUTH_CLIENT_ID}
-      # client_secret: ${CATALYST_OAUTH_CLIENT_SECRET}
       scope: "mcp"
       # MUST exactly match the redirect URI registered in Catalyst's OAuth
       # client, and MUST use your real Render domain (NOT localhost):
       redirect_uri: "https://one-impact-ai.onrender.com/api/mcp/catalyst/oauth/callback"
-      # Uncomment ONLY if you hit "invalid code verifier" errors (server lacks
-      # full PKCE support):
-      # skip_code_challenge_check: true
     # ---------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------
