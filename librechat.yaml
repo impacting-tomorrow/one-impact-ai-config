@@ -77,6 +77,8 @@ mcpServers:
     # this false avoids a failed shared connection attempt at boot.
     startup: false
 
+    requiresOAuth: true
+
     # Optional: a custom icon for the connector in the UI. Only enable if you
     # actually add the asset to the image (otherwise leave commented out).
     iconPath: "https://impactingtomorrow.com/wp-content/uploads/2024/03/favicon.png"
