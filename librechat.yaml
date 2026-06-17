@@ -96,7 +96,7 @@ mcpServers:
     # OAuth by probing Catalyst at startup — and that probe failing is the
     # usual cause of "won't connect / errors at startup". Setting this skips
     # the flaky detection.
-    # requiresOAuth: true
+    requiresOAuth: true
 
     # Optional custom icon (a URL works).
     # iconPath: "https://your-host.com/catalyst-icon.png"
@@ -107,14 +107,14 @@ mcpServers:
     # whoever runs Catalyst. Keep client_id/secret in Render env vars.
     # NOTE: the field is `scope` (singular), not `scopes`.
     oauth:
-      authorization_url: "https://catalyst.impactingtomorrow.com/oauth/authorize"   # from Catalyst
-      token_url: "https://catalyst.impactingtomorrow.com/oauth/token"               # from Catalyst
+      # authorization_url: "https://catalyst.impactingtomorrow.com/oauth/authorize"   # from Catalyst
+      # token_url: "https://catalyst.impactingtomorrow.com/oauth/token"               # from Catalyst
       # client_id: ${CATALYST_OAUTH_CLIENT_ID}
       # client_secret: ${CATALYST_OAUTH_CLIENT_SECRET}
       scope: "mcp"
       # MUST exactly match the redirect URI registered in Catalyst's OAuth
       # client, and MUST use your real Render domain (NOT localhost):
-      redirect_uri: "https://one-impact-ai.onrender.com/api/mcp/catalyst/oauth/callback"
+      # redirect_uri: "https://one-impact-ai.onrender.com/api/mcp/catalyst/oauth/callback"
       # Uncomment ONLY if you hit "invalid code verifier" errors (server lacks
       # full PKCE support):
       # skip_code_challenge_check: true
