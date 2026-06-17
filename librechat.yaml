@@ -1,0 +1,125 @@
+# ============================================================================
+# librechat.yaml  —  Custom configuration for [Your Organization]
+# ----------------------------------------------------------------------------
+# HOW THIS IS USED ON RENDER
+#   1. Host this file at a raw URL (e.g. a GitHub gist "Raw" link).
+#   2. In Render, set the env var:   CONFIG_PATH=https://.../librechat.yaml
+#   3. LibreChat fetches it at startup. After ANY edit, RESTART the LibreChat
+#      service in Render — changes are not picked up live.
+#
+# SECRETS RULE
+#   This file may be hosted at a public URL, so it must contain NO secrets.
+#   Use ${ENV_VAR} placeholders; put the real values in Render env vars.
+#
+# VALIDATION
+#   LibreChat fail-fast validates this file and will EXIT on a bad key/value.
+#   After the first restart, check the service logs. If it complains about a
+#   specific key, remove or fix that key and restart again.
+# ============================================================================
+
+# Config schema version. Bump only if current LibreChat docs specify a newer one.
+version: 1.2.8
+
+# Cache parsed config in memory.
+cache: true
+
+# ----------------------------------------------------------------------------
+# INTERFACE / BRANDING  (the no-fork branding for your demo)
+# ----------------------------------------------------------------------------
+# NOTE: the app NAME (title bar + login screen) is set via the APP_TITLE env
+# var in Render — e.g. APP_TITLE="Acme Insights" — not in this file.
+interface:
+  # Greeting shown on a new chat. Plain text.
+  customWelcome: "Welcome to Impacting Tomorrow — ask a question about our data to get started."
+
+  # Footer under the message box. Markdown links are allowed.
+  customFooter: "Impacting Tomorrow · Powered by Catalyst"
+
+  # Standard UI toggles — sensible defaults for a clean demo.
+  endpointsMenu: true
+  modelSelect: true
+  parameters: true
+  sidePanel: true
+  presets: true
+  prompts: true
+  bookmarks: true
+  multiConvo: false
+
+  # Who can USE / CREATE / SHARE MCP servers from the UI.
+  # For a demo: users may USE the admin-defined Catalyst server below,
+  # but cannot create or share their own.
+  mcpServers:
+    USE: true
+    CREATE: false
+    SHARE: false
+    SHARE_PUBLIC: false
+
+# ----------------------------------------------------------------------------
+# MCP SERVERS  (Catalyst, with per-user OAuth)
+# ----------------------------------------------------------------------------
+mcpServers:
+  catalyst:
+    # Transport Catalyst serves. Common values: streamable-http | sse.
+    # This is optional (LibreChat can infer it from the URL) — set it to match.
+    type: streamable-http
+
+    # The Catalyst MCP endpoint. Real value lives in the Render env var.
+    url: ${CATALYST_MCP_URL}
+
+    # Show it in the chat tools menu.
+    chatMenu: true
+
+    # Surface any instructions the server advertises to the model.
+    serverInstructions: true
+
+    # Do NOT connect at app startup. Catalyst authenticates PER USER, so each
+    # user runs their own OAuth handshake from the MCP settings panel. Leaving
+    # this false avoids a failed shared connection attempt at boot.
+    startup: false
+
+    # Optional: a custom icon for the connector in the UI. Only enable if you
+    # actually add the asset to the image (otherwise leave commented out).
+    iconPath: "https://impactingtomorrow.com/wp-content/uploads/2024/03/favicon.png"
+
+    # --- OAuth ---------------------------------------------------------------
+    # If Catalyst is a spec-compliant MCP server, LibreChat auto-detects OAuth
+    # from the 401 + server metadata and you need NOTHING more here.
+    #
+    # Only if Catalyst requires a PRE-REGISTERED OAuth client, uncomment the
+    # block below and supply values via env vars. Verify the exact field names
+    # against the current LibreChat "MCP Servers Object Structure" docs before
+    # relying on this — schema for the oauth block has changed over time.
+    #
+    # oauth:
+    #   authorization_url: ${CATALYST_OAUTH_AUTH_URL}
+    #   token_url: ${CATALYST_OAUTH_TOKEN_URL}
+    #   client_id: ${CATALYST_OAUTH_CLIENT_ID}
+    #   client_secret: ${CATALYST_OAUTH_CLIENT_SECRET}
+    #   scopes: "openid profile <catalyst-scopes>"
+    #   redirect_uri: "https://<your-app>.onrender.com/api/mcp/catalyst/oauth/callback"
+    # -------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# ENDPOINTS
+# ----------------------------------------------------------------------------
+# Also set in Render env:
+#   ENDPOINTS=agents,anthropic
+#   ANTHROPIC_API_KEY=sk-ant-...        (app-level key; shared by all users)
+endpoints:
+  # Agents drive BOTH MCP tool use (Catalyst) and Claude-style artifacts.
+  # If startup fails on one of these capability names, remove the offending
+  # one and restart — names can vary by version.
+  agents:
+    capabilities:
+      - "tools"       # allows agents to call MCP tools (Catalyst)
+      - "artifacts"   # Claude-style React / HTML / Mermaid rendering
+      - "actions"
+      - "chain"
+
+  # Native Anthropic (Claude). Key comes from the ANTHROPIC_API_KEY env var.
+  anthropic:
+    streamRate: 25
+    titleConvo: true
+    titleModel: "current"   # auto-title using whatever model the chat uses
+    # To restrict which Claude models appear, add a models: block here and
+    # verify the current model IDs against Anthropic's documentation.
