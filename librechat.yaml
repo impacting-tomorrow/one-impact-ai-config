@@ -30,7 +30,7 @@ cache: true
 # var in Render — e.g. APP_TITLE="Acme Insights" — not in this file.
 interface:
   # Greeting shown on a new chat. Plain text.
-  customWelcome: "Welcome to Impacting Tomorrow — ask a question about our data to get started."
+  customWelcome: "Welcome to Catalyst — ask a question about our data to get started."
 
   # Footer under the message box. Replaces LibreChat's default footer links.
   # Markdown links allowed, pipe-separated: "[Privacy](url) | [Contact](url)".
@@ -98,8 +98,10 @@ mcpServers:
     # the flaky detection.
     requiresOAuth: true
 
-    # Optional custom icon (a URL works).
-    # iconPath: "https://your-host.com/catalyst-icon.png"
+    # Custom icon — reuses the favicon served by the app from the image (see
+    # Dockerfile). Root-relative so it resolves against whatever origin the app
+    # runs on.
+    iconPath: "/assets/favicon-32x32.png"
 
     # --- OAuth -----------------------------------------------------------------
     # Provide the endpoints directly so LibreChat doesn't depend on OAuth

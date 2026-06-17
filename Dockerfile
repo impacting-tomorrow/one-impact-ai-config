@@ -1,10 +1,11 @@
 # ============================================================================
 # Dockerfile — brand the official LibreChat image with Impacting Tomorrow's
-# logo & favicon, fetched from URLs at BUILD time.
+# logo, favicon & Catalyst icon at BUILD time.
 # ----------------------------------------------------------------------------
 # Not a fork. Starts FROM the official prebuilt image and overlays your assets.
-# `ADD <url>` makes Docker download the file during build, so you don't need
-# curl/wget in the image and don't need to commit any image files to the repo.
+# All brand assets live in this repo under ./logos and are COPYed in at build
+# time (the build context is the repo root) — nothing is fetched from the web,
+# so the build is self-contained and reproducible.
 #
 # DEPLOY ON RENDER:  New > Web Service > point at the repo containing this
 # Dockerfile, Runtime = Docker. Set your env vars (APP_TITLE, MONGO_URI,
@@ -21,19 +22,28 @@ FROM ghcr.io/danny-avila/librechat:latest
 # (Harmless if the image already runs as root.)
 USER root
 
-# Logo (SVG) — shown in the app header / login screen.
-ADD https://impactingtomorrow.com/wp-content/uploads/2024/06/New-Logo-Horizontal-1.svg \
-    /app/client/dist/assets/logo.svg
+# Header / login logo. The app loads /assets/logo.svg as image/svg+xml via an
+# <img>, which is sandboxed from the page (Tailwind's `dark:` / the `.dark`
+# class can't reach inside it). So we ship TWO true-vector variants traced from
+# logos/catalyst-square-logo.png (mark + "catalyst" wordmark, tagline dropped):
+#   logo.svg       — navy wordmark, for the light theme
+#   logo-dark.svg  — white wordmark, for the dark theme
+# LibreChat's dark mode is the `.dark` class on <html>, so the CSS injected into
+# index.html below swaps the <img>'s rendered image to logo-dark.svg under
+# `.dark`. That makes the logo follow the IN-APP theme toggle (not the OS).
+# Regenerate both from the source PNG with vtracer + the wordmark-recolor step.
+COPY logos/logo.svg      /app/client/dist/assets/logo.svg
+COPY logos/logo-dark.svg /app/client/dist/assets/logo-dark.svg
 
-# Favicon (PNG) — dropped in at both sizes the app references.
-ADD https://impactingtomorrow.com/wp-content/uploads/2024/03/favicon.png \
-    /app/client/dist/assets/favicon-32x32.png
-ADD https://impactingtomorrow.com/wp-content/uploads/2024/03/favicon.png \
-    /app/client/dist/assets/favicon-16x16.png
+# Favicon (PNG) — from the repo, dropped in at both sizes the app references.
+# Also reused as the Catalyst MCP server icon via iconPath in librechat.yaml.
+COPY logos/favicon.png /app/client/dist/assets/favicon-32x32.png
+COPY logos/favicon.png /app/client/dist/assets/favicon-16x16.png
 
-# ADD-from-URL files default to mode 600; make them world-readable so the app
-# can serve them regardless of which user it runs as.
+# COPYed files inherit host perms; normalize to world-readable so the app can
+# serve them regardless of which user it runs as.
 RUN chmod 644 /app/client/dist/assets/logo.svg \
+              /app/client/dist/assets/logo-dark.svg \
               /app/client/dist/assets/favicon-16x16.png \
               /app/client/dist/assets/favicon-32x32.png
 
@@ -63,7 +73,7 @@ RUN chmod 644 /app/client/dist/assets/logo.svg \
 # The `if` guard means a wrong path skips this step instead of failing the build.
 # ---------------------------------------------------------------------------
 RUN if [ -f /app/client/dist/index.html ]; then \
-      sed -i 's|</head>|<style>:root{--it-purple:#61366E;--green-50:color-mix(in srgb,var(--it-purple) 8%,white)!important;--green-100:color-mix(in srgb,var(--it-purple) 16%,white)!important;--green-200:color-mix(in srgb,var(--it-purple) 30%,white)!important;--green-300:color-mix(in srgb,var(--it-purple) 50%,white)!important;--green-400:color-mix(in srgb,var(--it-purple) 75%,white)!important;--green-500:var(--it-purple)!important;--green-600:color-mix(in srgb,var(--it-purple) 85%,black)!important;--green-700:color-mix(in srgb,var(--it-purple) 72%,black)!important;--green-800:color-mix(in srgb,var(--it-purple) 58%,black)!important;--green-900:color-mix(in srgb,var(--it-purple) 45%,black)!important;--green-950:color-mix(in srgb,var(--it-purple) 32%,black)!important}button[type=submit]{background-color:var(--it-purple)!important;border-color:var(--it-purple)!important}[class*="text-green-"]{color:var(--it-purple)!important;-webkit-text-fill-color:var(--it-purple)!important}[class*="bg-green-"]{background-color:var(--it-purple)!important}[class*="fill-green-"]{fill:var(--it-purple)!important}[class*="stroke-green-"]{stroke:var(--it-purple)!important}[class*="focus:border-green"]:focus{border-color:var(--it-purple)!important}[class*="hover:border-green"]:hover{border-color:var(--it-purple)!important}[class*="border-green-"]:not([class*=":border-green"]){border-color:var(--it-purple)!important}[class*="focus:ring-green"]:focus{--tw-ring-color:var(--it-purple)!important}[class*="decoration-green"]:hover,[class*="decoration-green"]:focus{text-decoration-color:var(--it-purple)!important}</style></head>|' /app/client/dist/index.html; \
+      sed -i 's|</head>|<style>:root{--it-purple:#61366E;--green-50:color-mix(in srgb,var(--it-purple) 8%,white)!important;--green-100:color-mix(in srgb,var(--it-purple) 16%,white)!important;--green-200:color-mix(in srgb,var(--it-purple) 30%,white)!important;--green-300:color-mix(in srgb,var(--it-purple) 50%,white)!important;--green-400:color-mix(in srgb,var(--it-purple) 75%,white)!important;--green-500:var(--it-purple)!important;--green-600:color-mix(in srgb,var(--it-purple) 85%,black)!important;--green-700:color-mix(in srgb,var(--it-purple) 72%,black)!important;--green-800:color-mix(in srgb,var(--it-purple) 58%,black)!important;--green-900:color-mix(in srgb,var(--it-purple) 45%,black)!important;--green-950:color-mix(in srgb,var(--it-purple) 32%,black)!important}button[type=submit]{background-color:var(--it-purple)!important;border-color:var(--it-purple)!important}[class*="text-green-"]{color:var(--it-purple)!important;-webkit-text-fill-color:var(--it-purple)!important}[class*="bg-green-"]{background-color:var(--it-purple)!important}[class*="fill-green-"]{fill:var(--it-purple)!important}[class*="stroke-green-"]{stroke:var(--it-purple)!important}[class*="focus:border-green"]:focus{border-color:var(--it-purple)!important}[class*="hover:border-green"]:hover{border-color:var(--it-purple)!important}[class*="border-green-"]:not([class*=":border-green"]){border-color:var(--it-purple)!important}[class*="focus:ring-green"]:focus{--tw-ring-color:var(--it-purple)!important}[class*="decoration-green"]:hover,[class*="decoration-green"]:focus{text-decoration-color:var(--it-purple)!important}html.dark img[src$="logo.svg"]{content:url(/assets/logo-dark.svg)}</style></head>|' /app/client/dist/index.html; \
     fi
 
 # If your base image normally runs as a non-root user and you want to keep that
