@@ -38,22 +38,24 @@ RUN chmod 644 /app/client/dist/assets/logo.svg \
               /app/client/dist/assets/favicon-32x32.png
 
 # ---------------------------------------------------------------------------
-# OPTIONAL: brand the login button (and accent colors) WITHOUT a full rebuild.
-# LibreChat's colors are CSS variables, so this injects a small stylesheet that
-# overrides them at runtime.
+# OPTIONAL: re-skin LibreChat's green to your brand purple WITHOUT a rebuild.
+# LibreChat's colors are CSS variables; this injects a stylesheet that remaps
+# the ENTIRE green ramp (--green-50 ... --green-950) to a purple ramp derived
+# from one base value. That catches the stray greens (links like Terms of
+# Service, input hover/focus states) that a single-shade override misses.
 #
 # >>> Set ONE value: replace #6B2C91 with Impacting Tomorrow's purple hex. <<<
-# The hover/active variants derive automatically from it via color-mix(), so
-# you don't pick the darker shades yourself. (color-mix is supported in all
-# current browsers.) Get the exact hex from WordPress: Elementor > Site
-# Settings > Global Colors, or use your browser's color picker on the logo.
+# Lighter/darker shades are derived automatically via color-mix() (supported in
+# all current browsers). Get the exact hex from WordPress: Elementor > Site
+# Settings > Global Colors, or a browser color picker on the logo.
 #
-# The default login/submit button is green, so the green tokens point at your
-# purple; the button[type=submit] rule is a fallback. The `if` guard means a
-# wrong path just skips this step instead of failing the build.
+# NOTE: this remaps greens that flow through the CSS variables — i.e. almost all
+# of them. If a stray element is still green after this, it's using a literal
+# color; inspect it in devtools and add a targeted rule (or ask me for one).
+# The `if` guard means a wrong path skips this step instead of failing the build.
 # ---------------------------------------------------------------------------
 RUN if [ -f /app/client/dist/index.html ]; then \
-      sed -i 's|</head>|<style>:root{--it-purple:#6B2C91;--green-500:var(--it-purple)!important;--green-600:color-mix(in srgb,var(--it-purple) 85%,black)!important;--green-700:color-mix(in srgb,var(--it-purple) 72%,black)!important}button[type=submit]{background-color:var(--it-purple)!important;border-color:var(--it-purple)!important}</style></head>|' /app/client/dist/index.html; \
+      sed -i 's|</head>|<style>:root{--it-purple:#6B2C91;--green-50:color-mix(in srgb,var(--it-purple) 8%,white)!important;--green-100:color-mix(in srgb,var(--it-purple) 16%,white)!important;--green-200:color-mix(in srgb,var(--it-purple) 30%,white)!important;--green-300:color-mix(in srgb,var(--it-purple) 50%,white)!important;--green-400:color-mix(in srgb,var(--it-purple) 75%,white)!important;--green-500:var(--it-purple)!important;--green-600:color-mix(in srgb,var(--it-purple) 85%,black)!important;--green-700:color-mix(in srgb,var(--it-purple) 72%,black)!important;--green-800:color-mix(in srgb,var(--it-purple) 58%,black)!important;--green-900:color-mix(in srgb,var(--it-purple) 45%,black)!important;--green-950:color-mix(in srgb,var(--it-purple) 32%,black)!important}button[type=submit]{background-color:var(--it-purple)!important;border-color:var(--it-purple)!important}</style></head>|' /app/client/dist/index.html; \
     fi
 
 # If your base image normally runs as a non-root user and you want to keep that
